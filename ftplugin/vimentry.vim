@@ -12,31 +12,34 @@ function! s:write_default_template()
 
   " the parameter will parse as let g:ex_{var} = val
   call append ( 0, [
-        \ "-- Edit and save the file. (Press <F5> to manually reload changes)",
+        \ "-- Edit and save the file.",
         \ "-- The variables will be loaded and exists as g:ex_{var} in Vim's runtime.",
         \ "-- For example, \"foo = true\" will be \"g:ex_foo\", and the value is \"true\"",
         \ "",
-        \ "-- project settings:",
+        \ "-- Choose your project type",
+        \ "-- Press <F5> to apply project_type for other settings",
+        \ "project_type = auto -- { auto, clang, web, js, python, lua, ruby }",
+        \ "",
+        \ "-- Project Settings:",
         \ "cwd = " . cwd,
         \ "version = " . s:version,
         \ "project_name = " . projectName,
         \ "project_folder = " . folderName,
-        \ "project_type = auto",
         \ "",
-        \ "-- ex_project options:",
+        \ "-- ex_project Options:",
         \ "enable_project_browser = true -- { true, false }",
         \ "project_browser = ex -- { ex, nerdtree }",
         \ "",
-        \ "-- ex_gsearch options:",
+        \ "-- ex_gsearch Options:",
         \ "enable_gsearch = true -- { true, false }",
         \ "gsearch_engine = idutils -- { idutils, grep }",
         \ "",
-        \ "-- ex_tags options:",
+        \ "-- ex_tags Options:",
         \ "enable_tags = true -- { true, false }",
         \ "enable_symbols = true -- { true, false }",
         \ "enable_inherits = true -- { true, false }",
         \ "",
-        \ "-- ex_cscope options:",
+        \ "-- ex_cscope Options:",
         \ "enable_cscope = true -- { true, false }",
         \ "",
         \ "-- sub projects:",
@@ -51,7 +54,13 @@ function! s:write_default_template()
 endfunction
 
 function! s:parse_vimentry() 
+  " remove old global variables 
+  for varname in s:varnames
+    exec "unlet " . varname
+  endfor
+  let s:varnames = [] " list clean 
 
+  " parse each line to get variable
   for line in getline(1,'$')
     let pos = match(line,'+=\|=')
     if pos == -1 " if the line is comment line, skip it.
@@ -73,11 +82,11 @@ function! s:parse_vimentry()
             let g:ex_{var} = []
           endif
           " now add items to the list
-          silent call add ( g:ex_{var}, val )
+          call add ( g:ex_{var}, val )
         endif
       endif
 
-      silent call add( s:varnames, 'g:ex_'.var )
+      call add( s:varnames, 'g:ex_'.var )
     endif
   endfor
 
@@ -90,6 +99,8 @@ endfunction
 " if the file is empty, we creat a template for it
 if findfile( fnamemodify(s:filename,':p'), '.;' ) == "" || empty( readfile(s:filename) )
   call <SID>write_default_template()
+else
+  call <SID>parse_vimentry()
 endif
 
 " key mappings
