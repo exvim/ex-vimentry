@@ -6,13 +6,16 @@
 
 let s:varnames = []
 let s:filename = expand('%')
-let s:version = 26
+let s:version = 1
 
 "/////////////////////////////////////////////////////////////////////////////
 " functions
 "/////////////////////////////////////////////////////////////////////////////
 
 function! s:write_default_template() 
+  " clear screen
+  silent 1,$d _
+
   " NOTE: we use the dir path of .vimentry instead of getcwd().  
   let cwd = ex#path#translate( fnamemodify( s:filename, ':p:h' ), 'unix' )
   let projectName = fnamemodify( s:filename, ":t:r" )  
@@ -37,7 +40,7 @@ function! s:write_default_template()
         \ "",
         \ "-- ex_project Options:",
         \ "enable_project_browser = true -- { true, false }",
-        \ "project_browser = ex -- { ex, nerdtree }",
+        \ "project_browser = nerdtree -- { ex, nerdtree }",
         \ "",
         \ "-- ex_gsearch Options:",
         \ "enable_gsearch = true -- { true, false }",
@@ -92,16 +95,13 @@ function! s:parse_vimentry()
 
       " list variable
       else
-        let exprList = split(line, "+=")
-        if len(exprList)>=2 " we can define a variable if the number of split list itmes more than one
-          if !exists( 'g:ex_'.var ) " if we don't define this list variable, define it first
-            let g:ex_{var} = []
-          endif
+        if !exists( 'g:ex_'.var ) " if we don't define this list variable, define it first
+          let g:ex_{var} = []
+        endif
 
-          if val != ""
-            " now add items to the list
-            silent call add ( g:ex_{var}, val )
-          endif
+        if val != ""
+          " now add items to the list
+          silent call add ( g:ex_{var}, val )
         endif
       endif
 
@@ -158,17 +158,6 @@ function! s:apply_vimentry()
     " silent call exUtility#SetProjectFilter ( "file_filter", exUtility#GetFileFilterByLanguage (lang_list) )
   endif
 
-  " open project window
-  if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
-    " if exists( 'g:ex_project_browser' )
-    "   if g:ex_project_browser == "ex"
-    "     " TODO: silent exec g:exES_project_cmd.' '.g:exES_Project
-    "   elseif g:ex_project_browser == "nerdtree"
-    "     silent exec 'NERDTree'
-    "   endif
-    " end
-  endif
-
   " call exUtility#CreateIDLangMap ( exUtility#GetProjectFilter("file_filter") )
   " call exUtility#CreateQuickGenProject ()
 
@@ -221,29 +210,75 @@ function! s:apply_vimentry()
   endif
 endfunction
 
+" NOTE: we can't apply window open behavior during BufRead, because the
+" syntax/ file was not load it yet, and if we open to another a window it 
+" will start a new buffer and apply the syntax/ settings on the new buffer
+function! s:apply_vimentry_after_bufenter() 
+  " open project window
+  if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
+    if exists( 'g:ex_project_browser' )
+      if g:ex_project_browser == "ex"
+        " TODO: silent exec g:exES_project_cmd.' '.g:exES_Project
+      elseif g:ex_project_browser == "nerdtree"
+        silent exec 'NERDTree'
+      endif
+    end
+  endif
+endfunction
+
+function! s:init_buffer()
+  " do not show it in buffer list
+  setlocal bufhidden=hide
+  setlocal noswapfile
+  setlocal nobuflisted
+  setlocal nowrap
+
+  if b:bufenter_apply == 1
+    let b:bufenter_apply = 0
+    call s:apply_vimentry_after_bufenter()
+  endif
+endfunction
+
+function! s:init_vimentry( reload ) 
+  " if the file is empty, we creat a template for it
+  if findfile( fnamemodify(s:filename,':p'), '.;' ) == "" || empty( readfile(s:filename) )
+    call s:write_default_template()
+  endif
+  call s:parse_vimentry()
+
+  let b:bufenter_apply = 0
+  if !exists('g:ex_version') 
+    call ex#error('Invalid vimentry file')
+    return
+  endif
+
+  " if the version is different, write the vimentry file with template and re-parse it  
+  if g:ex_version != s:version
+    call s:write_default_template()
+    call s:parse_vimentry()
+  endif
+
+  " apply vimentry settings
+  call s:apply_vimentry()
+  if a:reload == 1
+    call s:apply_vimentry_after_bufenter()
+  else
+    let b:bufenter_apply = 1
+  endif
+endfunction
+
 "/////////////////////////////////////////////////////////////////////////////
 " public
 "/////////////////////////////////////////////////////////////////////////////
 
-function! g:ex_init_vimentry() 
-  " if the file is empty, we creat a template for it
-  if findfile( fnamemodify(s:filename,':p'), '.;' ) == "" || empty( readfile(s:filename) )
-    call <SID>write_default_template()
-  endif
-  call <SID>parse_vimentry()
-
-  " if the version is different, write the vimentry file with template and re-parse it  
-  if g:ex_version != s:version
-    call <SID>write_default_template()
-    call <SID>parse_vimentry()
-  endif
-
-  " apply vimentry settings
-  call <SID>apply_vimentry()
-endfunction
+" autocmd
+au! BufEnter <buffer> call <SID>init_buffer()
+au! BufWritePost <buffer> call <SID>init_vimentry(1)
 
 " key mappings
 nnoremap <silent> <buffer> <F5> :call <SID>apply_project_type()<CR>
-call g:ex_init_vimentry()
+
+" do init
+call s:init_vimentry(0)
 
 " vim:ts=2:sw=2:sts=2

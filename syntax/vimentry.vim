@@ -1,3 +1,9 @@
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+
 " syntax highlight
 syn match vimentrySetting transparent "^\w\+\s*\(+=\|=\)\s*\S*" contains=vimentryVar,vimentryVal,vimentryOperator
 syn match vimentryOperator	"\(+=\|=\)" contained
@@ -12,4 +18,5 @@ hi default link vimentryOperator Operator
 hi default link vimentryComment Comment
 hi default link vimentryError ErrorMsg
 
+let b:current_syntax = "vimentry"
 " vim:ts=2:sw=2:sts=2
