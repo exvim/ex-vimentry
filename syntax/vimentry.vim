@@ -1,5 +1,5 @@
 " syntax highlight
-syn match vimentrySetting transparent "^\w\+\s*\(+=\|=\)\s*\S\+" contains=vimentryVar,vimentryVal,vimentryOperator
+syn match vimentrySetting transparent "^\w\+\s*\(+=\|=\)\s*\S*" contains=vimentryVar,vimentryVal,vimentryOperator
 syn match vimentryOperator	"\(+=\|=\)" contained
 syn match vimentryVar	"^\w\+\(\s*\(+=\|=\)\)\@=" contained
 syn match vimentryVal	"\(\(+=\|=\)\s*\)\@<=\S\+" contained
