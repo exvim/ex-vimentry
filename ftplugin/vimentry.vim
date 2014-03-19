@@ -1,17 +1,12 @@
 " NOTE: ftplugin script only execute one time when you open the file
 
-"/////////////////////////////////////////////////////////////////////////////
-" variables
-"/////////////////////////////////////////////////////////////////////////////
-
+" static variables {{{1
 let s:varnames = []
 let s:filename = expand('%')
 let s:version = 1
-
-"/////////////////////////////////////////////////////////////////////////////
-" functions
-"/////////////////////////////////////////////////////////////////////////////
-
+"}}}
+" functions {{{1
+" s:write_default_template {{{2
 function! s:write_default_template() 
   " clear screen
   silent 1,$d _
@@ -67,6 +62,7 @@ function! s:write_default_template()
   silent exec "normal gg"
 endfunction
 
+" s:parse_vimentry {{{2
 function! s:parse_vimentry() 
   " remove old global variables 
   for varname in s:varnames
@@ -115,10 +111,12 @@ function! s:parse_vimentry()
   " endfor
 endfunction
 
+" s:apply_project_type {{{2
 function! s:apply_project_type() 
   " TODO:
 endfunction
 
+" s:apply_vimentry {{{2
 function! s:apply_vimentry() 
   " set parent working directory
   if exists( 'g:ex_cwd' )
@@ -210,6 +208,7 @@ function! s:apply_vimentry()
   endif
 endfunction
 
+" s:apply_vimentry_after_bufenter {{{2
 " NOTE: we can't apply window open behavior during BufRead, because the
 " syntax/ file was not load it yet, and if we open to another a window it 
 " will start a new buffer and apply the syntax/ settings on the new buffer
@@ -226,6 +225,7 @@ function! s:apply_vimentry_after_bufenter()
   endif
 endfunction
 
+" s:init_buffer {{{2
 function! s:init_buffer()
   " do not show it in buffer list
   setlocal bufhidden=hide
@@ -239,6 +239,7 @@ function! s:init_buffer()
   endif
 endfunction
 
+" s:init_vimentry {{{2
 function! s:init_vimentry( reload ) 
   " if the file is empty, we creat a template for it
   if findfile( fnamemodify(s:filename,':p'), '.;' ) == "" || empty( readfile(s:filename) )
@@ -266,11 +267,8 @@ function! s:init_vimentry( reload )
     let b:bufenter_apply = 1
   endif
 endfunction
-
-"/////////////////////////////////////////////////////////////////////////////
-" public
-"/////////////////////////////////////////////////////////////////////////////
-
+"}}}1
+" public {{{1
 " autocmd
 au! BufEnter <buffer> call <SID>init_buffer()
 au! BufWritePost <buffer> call <SID>init_vimentry(1)
@@ -280,5 +278,6 @@ nnoremap <silent> <buffer> <F5> :call <SID>apply_project_type()<CR>
 
 " do init
 call s:init_vimentry(0)
+"}}}
 
-" vim:ts=2:sw=2:sts=2
+" vim:ts=2:sw=2:sts=2 et fdm=marker:
