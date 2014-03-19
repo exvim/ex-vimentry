@@ -1,7 +1,7 @@
 if version < 600
-  syntax clear
+    syntax clear
 elseif exists("b:current_syntax")
-  finish
+    finish
 endif
 
 " syntax highlight
@@ -19,4 +19,4 @@ hi default link vimentryComment Comment
 hi default link vimentryError ErrorMsg
 
 let b:current_syntax = "vimentry"
-" vim:ts=2:sw=2:sts=2
+" vim:ts=4:sw=4:sts=4
