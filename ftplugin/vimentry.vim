@@ -51,16 +51,16 @@ function! s:init_vimentry( reload )
 endfunction
 "}}}1
 
-" public {{{1
-" autocmd
+" autocmd {{{1
 au! BufEnter <buffer> call <SID>init_buffer()
 au! BufWritePost <buffer> call <SID>init_vimentry(1)
+"}}}1
 
-" key mappings
+" key mappings {{{1
 nnoremap <silent> <buffer> <F5> :call <SID>apply_project_type()<CR>
+"}}}1
 
 " do init
 call s:init_vimentry(0)
-"}}}
 
 " vim:ts=4:sw=4:sts=4 et fdm=marker:
