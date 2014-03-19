@@ -1,5 +1,6 @@
 " variables {{{1
 let s:varnames = []
+let g:ex_vimentry_version = 1
 " }}}
 
 " functions {{{1
@@ -10,8 +11,9 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     " NOTE: we use the dir path of .vimentry instead of getcwd().  
-    let cwd = ex#path#translate( fnamemodify( s:filename, ':p:h' ), 'unix' )
-    let projectName = fnamemodify( s:filename, ":t:r" )  
+    let filename = expand('%')
+    let cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
+    let projectName = fnamemodify( filename, ":t:r" )  
 
     " the parameter will parse as let g:ex_{var} = val
     silent call append ( 0, [
@@ -28,7 +30,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- Project Settings:",
                 \ "cwd = " . cwd,
-                \ "version = " . s:version,
+                \ "version = " . g:ex_vimentry_version,
                 \ "project_name = " . projectName,
                 \ "",
                 \ "-- ex_project Options:",

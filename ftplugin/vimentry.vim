@@ -1,10 +1,5 @@
 " NOTE: ftplugin script only execute one time when you open the file
 
-" variables {{{1
-let s:filename = expand('%')
-let s:version = 1
-"}}}
-
 " functions {{{1
 
 " s:init_buffer {{{2
@@ -23,8 +18,10 @@ endfunction
 
 " s:init_vimentry {{{2
 function! s:init_vimentry( reload ) 
+    let filename = expand('%')
+
     " if the file is empty, we creat a template for it
-    if findfile( fnamemodify(s:filename,':p'), '.;' ) == "" || empty( readfile(s:filename) )
+    if findfile( fnamemodify(filename,':p'), '.;' ) == "" || empty( readfile(filename) )
         call vimentry#write_default_template()
     endif
     call vimentry#parse()
@@ -39,7 +36,7 @@ function! s:init_vimentry( reload )
     endif
 
     " if the version is different, write the vimentry file with template and re-parse it  
-    if g:ex_version != s:version
+    if g:ex_version != g:ex_vimentry_version
         call vimentry#write_default_template()
         call vimentry#parse()
     endif
