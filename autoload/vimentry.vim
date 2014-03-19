@@ -219,7 +219,8 @@ function vimentry#apply_after_bufenter()
     if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
         if exists( 'g:ex_project_browser' )
             if g:ex_project_browser == "ex"
-                " TODO: silent exec g:exES_project_cmd.' '.g:exES_Project
+                let g:ex_project_file = g:exvim_files_path . "/files.exproject"
+                silent exec 'EXProject ' . g:ex_project_file
             elseif g:ex_project_browser == "nerdtree"
                 silent exec 'NERDTree'
             endif
