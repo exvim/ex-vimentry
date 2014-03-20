@@ -10,6 +10,10 @@ function! s:init_buffer()
     setlocal nobuflisted
     setlocal nowrap
 
+    " NOTE: this is quite important, 
+    " since window open during vimentry init will not invoke WinLeave event
+    call ex#window#record()
+
     if b:bufenter_apply == 1
         let b:bufenter_apply = 0
         call vimentry#apply_after_bufenter()
@@ -40,6 +44,10 @@ function! s:init_vimentry( reload )
         call vimentry#write_default_template()
         call vimentry#parse()
     endif
+
+    " NOTE: this is quite important,
+    " since window open during vimentry init will not invoke WinLeave event
+    call ex#window#record()
 
     " apply vimentry settings
     call vimentry#apply()
