@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let g:ex_vimentry_version = 1
+let g:ex_vimentry_version = 3
 " }}}
 
 " functions {{{1
@@ -23,10 +23,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- Choose your project type",
                 \ "-- Press <F5> to apply project_type for other settings",
-                \ "project_type = all -- { all, clang, web, js, shader, python, lua, ruby, ... }",
-                \ "file_filter = ",
-                \ "folders_included = ",
-                \ "folders_excluded = ",
+                \ "project_type = all -- { all, build, clang, data, doc, game, server, shell, web, ... }",
                 \ "",
                 \ "-- Project Settings:",
                 \ "cwd = " . cwd,
@@ -36,6 +33,10 @@ function vimentry#write_default_template()
                 \ "-- ex_project Options:",
                 \ "enable_project_browser = true -- { true, false }",
                 \ "project_browser = nerdtree -- { ex, nerdtree }",
+                \ "folder_filter_mode = include -- { include, exclude }",
+                \ "folder_filter += ",
+                \ "file_filter += ",
+                \ "file_ignore_pattern += ",
                 \ "",
                 \ "-- ex_gsearch Options:",
                 \ "enable_gsearch = true -- { true, false }",
@@ -84,26 +85,38 @@ function vimentry#parse()
         " echomsg var . "=" . val
 
         if var != ""
-            if stridx ( line, '+=') == -1 " string variable
-                let g:ex_{var} = val
-            else " list variable
+            if !exists( 'g:ex_'.var )
+                silent call add( s:varnames, 'g:ex_'.var )
+            endif
+
+            " list variable 
+            " sytanx: 
+            " list = val1,val2,
+            " list += val1
+            " list += val1,val2
+            if stridx ( line, '+=') != -1 || stridx ( val, ',' ) != -1
                 if !exists( 'g:ex_'.var ) " if we don't define this list variable, define it first
                     let g:ex_{var} = []
                 endif
 
-                if val != ""
-                    " now add items to the list
-                    silent call add ( g:ex_{var}, val )
-                endif
-            endif
 
-            silent call add( s:varnames, 'g:ex_'.var )
+                let vallist = split( val, ',' )
+                for v in vallist
+                    if v != ""
+                        silent call add ( g:ex_{var}, v )
+                    endif
+                endfor
+
+            " string variable
+            else
+                let g:ex_{var} = val
+            endif
         endif
     endfor
 
     " DEBUG:
     " for varname in s:varnames
-    "   echomsg varname . " = " . {varname} 
+    "   echomsg varname . " = " . string({varname}) 
     " endfor
 endfunction
 
@@ -115,7 +128,10 @@ endfunction
 " vimentry#reset {{{2
 function vimentry#reset() 
     let b:bufenter_apply = 0
-    au! VimEnter,BufNewFile,BufEnter * let &titlestring = ""
+    augroup ex_project_name
+        au!
+        au VimEnter,BufNewFile,BufEnter * let &titlestring = ""
+    augroup END
 endfunction
 
 " vimentry#apply {{{2
@@ -130,7 +146,10 @@ function vimentry#apply()
 
     " set title
     if exists('g:ex_project_name')
-        au! VimEnter,BufNewFile,BufEnter * let &titlestring = g:ex_project_name . ' : %t %M%r (' . expand("%:p:h") . ')' . ' %h%w%y'
+        augroup ex_project_name
+            au!
+            au VimEnter,BufNewFile,BufEnter * let &titlestring = g:ex_project_name . ' : %t %M%r (' . expand("%:p:h") . ')' . ' %h%w%y'
+        augroup END
     else
         call ex#error("Can't find vimentry setting 'project_name'")
         return
@@ -154,8 +173,8 @@ function vimentry#apply()
     " apply project_type settings
     if exists('g:ex_project_type')
         " TODO:
-        " let lang_list = split( g:exES_LangType, ',' )
-        " silent call exUtility#SetProjectFilter ( "file_filter", exUtility#GetFileFilterByLanguage (lang_list) )
+        " let project_types = split( g:ex_project_type, ',' )
+        " silent call exUtility#SetProjectFilter ( "file_filter", exUtility#GetFileFilterByLanguage (project_types) )
     endif
 
     " TODO: call exUtility#CreateIDLangMap ( exUtility#GetProjectFilter("file_filter") )
@@ -204,29 +223,85 @@ function vimentry#apply()
     "   endfor
     " endif
 
+    " open project window
+    if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
+        if exists( 'g:ex_project_browser' )
+            " NOTE: Any windows open or close during VimEnter will not invoke WinEnter,WinLeave event
+            " this is why I manually call doautocmd here
+            if g:ex_project_browser == "ex"
+
+                " open ex_project window
+                doautocmd BufLeave
+                doautocmd WinLeave
+                let g:ex_project_file = g:exvim_files_path . "/files.exproject"
+                silent exec 'EXProject ' . g:ex_project_file
+
+                " back to edit window
+                doautocmd BufLeave
+                doautocmd WinLeave
+                call ex#window#goto_edit_window()
+
+            elseif g:ex_project_browser == "nerdtree"
+
+                " Example: let g:NERDTreeIgnore=['.git$[[dir]]', '.o$[[file]]']
+                let g:NERDTreeIgnore = [] " clear ignore list
+                if exists( 'g:ex_file_ignore_pattern' )
+                    if type(g:ex_file_ignore_pattern) == type([])
+                        for pattern in g:ex_file_ignore_pattern
+                            silent call add ( g:NERDTreeIgnore, pattern.'[[file]]' )
+                        endfor
+                    endif
+                endif
+
+                if exists( 'g:ex_folder_filter_mode' ) && exists( 'g:ex_folder_filter' )
+                    if g:ex_folder_filter_mode == 'exclude'
+                        if type(g:ex_folder_filter) == type([])
+                            for pattern in g:ex_folder_filter
+                                silent call add ( g:NERDTreeIgnore, pattern.'[[dir]]' )
+                            endfor
+                        endif
+                    endif
+                endif
+
+                " open nerdtree window
+                doautocmd BufLeave
+                doautocmd WinLeave
+                silent exec 'NERDTree'
+
+                " back to edit window
+                doautocmd BufLeave
+                doautocmd WinLeave
+                call ex#window#goto_edit_window()
+            endif
+        end
+    endif
+
     " run custom scripts
     if exists('*g:exvim_post_init')
         call g:exvim_post_init()
     endif
 endfunction
 
-" vimentry#apply_after_bufenter {{{2
-" NOTE: we can't apply window open behavior during BufRead, because the
-" syntax/ file was not load it yet, and if we open to another a window it 
-" will start a new buffer and apply the syntax/ settings on the new buffer
-function vimentry#apply_after_bufenter() 
-    " open project window
-    if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
-        if exists( 'g:ex_project_browser' )
-            if g:ex_project_browser == "ex"
-                let g:ex_project_file = g:exvim_files_path . "/files.exproject"
-                silent exec 'EXProject ' . g:ex_project_file
-            elseif g:ex_project_browser == "nerdtree"
-                silent exec 'NERDTree'
-            endif
-        end
-    endif
-endfunction
+" " vimentry#apply_after_bufenter {{{2
+" " NOTE: we can't apply window open behavior during BufRead, because the
+" " syntax/ file was not load it yet, and if we open to another a window it 
+" " will start a new buffer and apply the syntax/ settings on the new buffer
+" function vimentry#apply_after_bufenter() 
+"     " open project window
+"     if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
+"         if exists( 'g:ex_project_browser' )
+"             if g:ex_project_browser == "ex"
+"                 let g:ex_project_file = g:exvim_files_path . "/files.exproject"
+"                 silent exec 'EXProject ' . g:ex_project_file
+"             elseif g:ex_project_browser == "nerdtree"
+"                 silent exec 'NERDTree'
+"             endif
+"         end
+"     endif
+
+"     " back to edit window
+"     call ex#window#goto_edit_window()
+" endfunction
 
 "}}}1
 
