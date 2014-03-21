@@ -32,7 +32,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- ex_project Options:",
                 \ "enable_project_browser = true -- { true, false }",
-                \ "project_browser = nerdtree -- { ex, nerdtree }",
+                \ "project_browser = ex -- { ex, nerdtree }",
                 \ "folder_filter_mode = include -- { include, exclude }",
                 \ "folder_filter += ",
                 \ "file_filter += ",
