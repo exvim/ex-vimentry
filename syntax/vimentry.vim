@@ -19,4 +19,5 @@ hi default link vimentryComment Comment
 hi default link vimentryError ErrorMsg
 
 let b:current_syntax = "vimentry"
+
 " vim:ts=4:sw=4:sts=4
