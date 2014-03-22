@@ -15,21 +15,21 @@ be installed with a variety of plugin managers:
 To install using [Vundle](https://github.com/gmarik/vundle):
 
     # add this line to your .vimrc file
-    Bundle 'exvim/ex_vimentry'
+    Bundle 'exvim/ex-vimentry'
 
 To install using [Pathogen](https://github.com/tpope/vim-pathogen):
 
     cd ~/.vim/bundle
-    git clone https://github.com/exvim/ex_vimentry
+    git clone https://github.com/exvim/ex-vimentry
 
 To install using [NeoBundle](https://github.com/Shougo/neobundle.vim):
 
     # add this line to your .vimrc file
-    NeoBundle 'exvim/ex_vimentry'
+    NeoBundle 'exvim/ex-vimentry'
 
-[Download zip file](https://github.com/exvim/ex_vimentry/archive/master.zip):
+[Download zip file](https://github.com/exvim/ex-vimentry/archive/master.zip):
 
     cd ~/.vim
-    unzip ex_vimentry-master.zip
+    unzip ex-vimentry-master.zip
     copy all of the files into your ~/.vim directory
 
