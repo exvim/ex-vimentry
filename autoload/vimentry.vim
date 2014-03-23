@@ -116,47 +116,65 @@ function vimentry#parse()
 
     " DEBUG:
     " for varname in s:varnames
-    "   echomsg varname . " = " . string({varname}) 
+    "     echomsg varname . " = " . string({varname}) 
     " endfor
+endfunction
+
+" vimentry#on {{{2
+let s:event_listeners = {
+            \ 'reset': [],
+            \ 'changed': [],
+            \ 'project_type_changed': [],
+            \ } 
+
+function vimentry#on( event, funcref ) 
+    if !has_key( s:event_listeners, a:event )
+        call ex#warning( "Cant find event " . a:event )
+        return
+    endif
+
+    if type(a:funcref) != 2
+        call ex#warning( "the second argument must be a function ref" )
+    endif
+
+    silent call add ( s:event_listeners[a:event], a:funcref )
 endfunction
 
 " vimentry#apply_project_type {{{2
 function vimentry#apply_project_type() 
-    " TODO:
+    " invoke project_type_changed event
+    " NOTE: function ref variable must start with captial character
+    let listeners = s:event_listeners['project_type_changed']
+    for Funcref in listeners
+        call Funcref()
+    endfor
 endfunction
 
 " vimentry#reset {{{2
 function vimentry#reset() 
-    let b:bufenter_apply = 0
-    augroup ex_title_string
-        au!
-        au VimEnter,BufNewFile,BufEnter * let &titlestring = ""
-    augroup END
+    " invoke reset event
+    " NOTE: function ref variable must start with captial character
+    let listeners = s:event_listeners['reset']
+    for Funcref in listeners
+        call Funcref()
+    endfor
 endfunction
 
 " vimentry#apply {{{2
 function vimentry#apply() 
-    " set parent working directory
-    if exists( 'g:ex_cwd' )
-        silent exec 'cd ' . escape(g:ex_cwd, " ")
-    else
+    " pre-check 
+    if !exists( 'g:ex_cwd' )
         call ex#error("Can't find vimentry setting 'cwd'")
         return
     endif
 
-    " set title
-    if exists('g:ex_project_name')
-        " change current title 
-        let &titlestring = g:ex_project_name . ' : %t (' . expand("%:p:.:h") . '/)'
-        " define the rule for other title
-        augroup ex_title_string
-            au!
-            au VimEnter,BufNewFile,BufEnter * let &titlestring = g:ex_project_name . ' : %t (' . expand("%:p:.:h") . '/)'
-        augroup END
-    else
+    if !exists('g:ex_project_name')
         call ex#error("Can't find vimentry setting 'project_name'")
         return
     endif
+
+    " set parent working directory
+    silent exec 'cd ' . escape(g:ex_cwd, " ")
 
     " save the .exvim.xxx/ fullpath to g:exvim_files_path 
     let g:exvim_files_path = g:ex_cwd.'/.exvim.'.g:ex_project_name
@@ -173,138 +191,13 @@ function vimentry#apply()
         silent call mkdir(path)
     endif
 
-    " apply project_type settings
-    if exists('g:ex_project_type')
-        " TODO:
-        " let project_types = split( g:ex_project_type, ',' )
-        " silent call exUtility#SetProjectFilter ( "file_filter", exUtility#GetFileFilterByLanguage (project_types) )
-    endif
-
-    " TODO: call exUtility#CreateIDLangMap ( exUtility#GetProjectFilter("file_filter") )
-    " TODO: call exUtility#CreateQuickGenProject ()
-
-    " set tag file path
-    if exists( 'g:ex_enable_tags' ) && g:ex_enable_tags == "true"
-        " let &tags = &tags . ',' . g:exES_Tag
-        let &tags = escape(g:exvim_files_path."/tags", " ")
-    endif
-
-    " create .exvim.xxx/hierarchies/
-    if exists( 'g:ex_enable_inherits' ) && g:ex_enable_inherits == "true"
-        " TODO:
-        " let inherit_directory_path = g:exES_CWD.'/'.g:exES_vimfiles_dirname.'/.hierarchies' 
-        " if finddir(inherit_directory_path) == ''
-        "   silent call mkdir(inherit_directory_path)
-        " endif
-    endif
-
-    " set cscope file path
-    if exists( 'g:ex_enable_cscope' ) && g:ex_enable_cscope == "true"
-        " TODO: silent call g:exCS_ConnectCscopeFile()
-    endif
-
-    " macro highlight
-    if exists( 'g:ex_enable_macrohl' ) && g:ex_enable_macrohl == "true" 
-        " TODO: silent call g:exMH_InitMacroList(g:exES_Macro)
-    endif
-
-    " TODO:
-    " " set vimentry references
-    " if exists ('g:exES_vimentryRefs')
-    "   for vimentry in g:exES_vimentryRefs
-    "     let ref_entry_dir = fnamemodify( vimentry, ':p:h')
-    "     let ref_vimfiles_dirname = '.vimfiles.' . fnamemodify( vimentry, ":t:r" )
-    "     let fullpath_tagfile = exUtility#GetVimFile ( ref_entry_dir, ref_vimfiles_dirname, 'tag')
-    "     if has ('win32')
-    "       let fullpath_tagfile = exUtility#Pathfmt( fullpath_tagfile, 'windows' )
-    "     elseif has ('unix')
-    "       let fullpath_tagfile = exUtility#Pathfmt( fullpath_tagfile, 'unix' )
-    "     endif
-    "     if findfile ( fullpath_tagfile ) != ''
-    "       let &tags .= ',' . fullpath_tagfile
-    "     endif
-    "   endfor
-    " endif
-
-    " open project window
-    if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
-        if exists( 'g:ex_project_browser' )
-            " NOTE: Any windows open or close during VimEnter will not invoke WinEnter,WinLeave event
-            " this is why I manually call doautocmd here
-            if g:ex_project_browser == "ex"
-
-                " open ex_project window
-                doautocmd BufLeave
-                doautocmd WinLeave
-                let g:ex_project_file = g:exvim_files_path . "/files.exproject"
-                silent exec 'EXProject ' . g:ex_project_file
-
-                " back to edit window
-                doautocmd BufLeave
-                doautocmd WinLeave
-                call ex#window#goto_edit_window()
-
-            elseif g:ex_project_browser == "nerdtree"
-
-                " Example: let g:NERDTreeIgnore=['.git$[[dir]]', '.o$[[file]]']
-                let g:NERDTreeIgnore = [] " clear ignore list
-                if exists( 'g:ex_file_ignore_pattern' )
-                    if type(g:ex_file_ignore_pattern) == type([])
-                        for pattern in g:ex_file_ignore_pattern
-                            silent call add ( g:NERDTreeIgnore, pattern.'[[file]]' )
-                        endfor
-                    endif
-                endif
-
-                if exists( 'g:ex_folder_filter_mode' ) && exists( 'g:ex_folder_filter' )
-                    if g:ex_folder_filter_mode == 'exclude'
-                        if type(g:ex_folder_filter) == type([])
-                            for pattern in g:ex_folder_filter
-                                silent call add ( g:NERDTreeIgnore, pattern.'[[dir]]' )
-                            endfor
-                        endif
-                    endif
-                endif
-
-                " open nerdtree window
-                doautocmd BufLeave
-                doautocmd WinLeave
-                silent exec 'NERDTree'
-
-                " back to edit window
-                doautocmd BufLeave
-                doautocmd WinLeave
-                call ex#window#goto_edit_window()
-            endif
-        end
-    endif
-
-    " run custom scripts
-    if exists('*g:exvim_post_init')
-        call g:exvim_post_init()
-    endif
+    " invoke changed event
+    " NOTE: function ref variable must start with captial character
+    let listeners = s:event_listeners['changed']
+    for Funcref in listeners
+        call Funcref()
+    endfor
 endfunction
-
-" " vimentry#apply_after_bufenter {{{2
-" " NOTE: we can't apply window open behavior during BufRead, because the
-" " syntax/ file was not load it yet, and if we open to another a window it 
-" " will start a new buffer and apply the syntax/ settings on the new buffer
-" function vimentry#apply_after_bufenter() 
-"     " open project window
-"     if exists( 'g:ex_enable_project_browser' ) && g:ex_enable_project_browser == "true"
-"         if exists( 'g:ex_project_browser' )
-"             if g:ex_project_browser == "ex"
-"                 let g:ex_project_file = g:exvim_files_path . "/files.exproject"
-"                 silent exec 'EXProject ' . g:ex_project_file
-"             elseif g:ex_project_browser == "nerdtree"
-"                 silent exec 'NERDTree'
-"             endif
-"         end
-"     endif
-
-"     " back to edit window
-"     call ex#window#goto_edit_window()
-" endfunction
 
 "}}}1
 
