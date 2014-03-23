@@ -24,18 +24,6 @@ function! s:init_vimentry()
     " reset last applys
     call vimentry#reset()
 
-    "
-    if !exists('g:ex_version') 
-        call ex#error('Invalid vimentry file')
-        return
-    endif
-
-    " if the version is different, write the vimentry file with template and re-parse it  
-    if g:ex_version != g:ex_vimentry_version
-        call vimentry#write_default_template()
-        call vimentry#parse()
-    endif
-
     " apply vimentry settings
     call vimentry#apply()
 endfunction

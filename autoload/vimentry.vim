@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let g:ex_vimentry_version = 3
+let s:version = 3
 " }}}
 
 " functions {{{1
@@ -27,7 +27,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- Project Settings:",
                 \ "cwd = " . cwd,
-                \ "version = " . g:ex_vimentry_version,
+                \ "version = " . s:version,
                 \ "project_name = " . projectName,
                 \ "",
                 \ "-- ex_project Options:",
@@ -63,6 +63,23 @@ function vimentry#write_default_template()
     silent exec "normal gg"
 endfunction
 
+" vimentry#get {{{2
+function vimentry#get( name ) 
+    if exists( 's:vimentry_'.a:name )
+        return s:vimentry_{a:name}
+    endif
+    return ''
+endfunction
+
+" vimentry#check {{{2
+function vimentry#check( name, val ) 
+    let val = vimentry#get(a:name)
+    if val == a:val
+        return 1
+    endif
+    return 0
+endfunction
+
 " vimentry#parse {{{2
 function vimentry#parse() 
     " remove old global variables 
@@ -85,8 +102,8 @@ function vimentry#parse()
         " echomsg var . "=" . val
 
         if var != ""
-            if !exists( 'g:ex_'.var )
-                silent call add( s:varnames, 'g:ex_'.var )
+            if !exists( 's:vimentry_'.var )
+                silent call add( s:varnames, 's:vimentry_'.var )
             endif
 
             " list variable 
@@ -95,21 +112,21 @@ function vimentry#parse()
             " list += val1
             " list += val1,val2
             if stridx ( line, '+=') != -1 || stridx ( val, ',' ) != -1
-                if !exists( 'g:ex_'.var ) " if we don't define this list variable, define it first
-                    let g:ex_{var} = []
+                if !exists( 's:vimentry_'.var ) " if we don't define this list variable, define it first
+                    let s:vimentry_{var} = []
                 endif
 
 
                 let vallist = split( val, ',' )
                 for v in vallist
                     if v != ""
-                        silent call add ( g:ex_{var}, v )
+                        silent call add ( s:vimentry_{var}, v )
                     endif
                 endfor
 
             " string variable
             else
-                let g:ex_{var} = val
+                let s:vimentry_{var} = val
             endif
         endif
     endfor
@@ -162,33 +179,16 @@ endfunction
 
 " vimentry#apply {{{2
 function vimentry#apply() 
-    " pre-check 
-    if !exists( 'g:ex_cwd' )
-        call ex#error("Can't find vimentry setting 'cwd'")
+    " check if we have version
+    if vimentry#check('version', '')
+        call ex#error('Invalid vimentry file, no version provide.')
         return
     endif
 
-    if !exists('g:ex_project_name')
-        call ex#error("Can't find vimentry setting 'project_name'")
-        return
-    endif
-
-    " set parent working directory
-    silent exec 'cd ' . escape(g:ex_cwd, " ")
-
-    " save the .exvim.xxx/ fullpath to g:exvim_files_path 
-    let g:exvim_files_path = g:ex_cwd.'/.exvim.'.g:ex_project_name
-
-    " create folder .exvim.xxx/ if not exists
-    let path = g:exvim_files_path
-    if finddir(path) == ''
-        silent call mkdir(path)
-    endif
-
-    " create folder .exvim.xxx/tmp/ if not exists
-    let path = g:exvim_files_path.'/tmp' 
-    if finddir(path) == ''
-        silent call mkdir(path)
+    " if the version is different, write the vimentry file with template and re-parse it  
+    if vimentry#check('version', s:version)
+        call vimentry#write_default_template()
+        call vimentry#parse()
     endif
 
     " invoke changed event
