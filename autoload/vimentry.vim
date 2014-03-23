@@ -128,7 +128,7 @@ endfunction
 " vimentry#reset {{{2
 function vimentry#reset() 
     let b:bufenter_apply = 0
-    augroup ex_project_name
+    augroup ex_title_string
         au!
         au VimEnter,BufNewFile,BufEnter * let &titlestring = ""
     augroup END
@@ -146,9 +146,12 @@ function vimentry#apply()
 
     " set title
     if exists('g:ex_project_name')
-        augroup ex_project_name
+        " change current title 
+        let &titlestring = g:ex_project_name . ' : %t (' . expand("%:p:.:h") . '/)'
+        " define the rule for other title
+        augroup ex_title_string
             au!
-            au VimEnter,BufNewFile,BufEnter * let &titlestring = g:ex_project_name . ' : %t %M%r (' . expand("%:p:h") . ')' . ' %h%w%y'
+            au VimEnter,BufNewFile,BufEnter * let &titlestring = g:ex_project_name . ' : %t (' . expand("%:p:.:h") . '/)'
         augroup END
     else
         call ex#error("Can't find vimentry setting 'project_name'")
