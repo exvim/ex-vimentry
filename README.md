@@ -6,6 +6,7 @@ file, apply settings automatically when finishing parse.
 ## Requirements
 
 - Vim 7.0 or higher.
+- [exvim/ex-utility](https://github.com/exvim/ex-utility) 
 
 ## Installation
 
