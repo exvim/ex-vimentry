@@ -186,7 +186,7 @@ function vimentry#apply()
     endif
 
     " if the version is different, write the vimentry file with template and re-parse it  
-    if vimentry#check('version', s:version)
+    if !vimentry#check('version', s:version)
         call vimentry#write_default_template()
         call vimentry#parse()
     endif
