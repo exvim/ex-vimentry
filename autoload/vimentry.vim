@@ -64,10 +64,17 @@ function vimentry#write_default_template()
 endfunction
 
 " vimentry#get {{{2
-function vimentry#get( name ) 
+function vimentry#get( name, ... ) 
     if exists( 's:vimentry_'.a:name )
         return s:vimentry_{a:name}
     endif
+
+    " if we provide default, return it
+    if a:0 > 0
+        return a:1
+    endif
+
+    " return empty
     return ''
 endfunction
 
