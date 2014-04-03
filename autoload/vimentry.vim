@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 3
+let s:version = 4
 " }}}
 
 " functions {{{1
@@ -26,9 +26,9 @@ function vimentry#write_default_template()
                 \ "project_type = all -- { all, build, clang, data, doc, game, server, shell, web, ... }",
                 \ "",
                 \ "-- Project Settings:",
-                \ "cwd = " . cwd,
+                \ "cwd = '" . cwd . "'",
                 \ "version = " . s:version,
-                \ "project_name = " . projectName,
+                \ "project_name = '" . projectName . "'",
                 \ "",
                 \ "-- ex_project Options:",
                 \ "enable_project_browser = true -- { true, false }",
@@ -103,7 +103,15 @@ function vimentry#parse()
         endif
 
         let var = matchstr( line, '^\w\+\(\s*\(+=\|=\)\)\@=', 0 )
-        let val = matchstr( line, '\(\(+=\|=\)\s*\)\@<=\S\+', pos )
+
+        " get value
+        if match( line, "^\\w\\+\\s*\\(+=\\|=\\)\\s*'" ) != -1
+            let val = matchstr( line, "\\(\\(+=\\|=\\)\\s*'\\)\\@<=.\\{-}\\('\\)\\@=", pos )
+        elseif match( line, '^\w\+\s*\(+=\|=\)\s*"' ) != -1
+            let val = matchstr( line, '\(\(+=\|=\)\s*"\)\@<=.\{-}\("\)\@=', pos )
+        else
+            let val = matchstr( line, '\(\(+=\|=\)\s*\)\@<=\S\+', pos )
+        endif
 
         " DEBUG:
         " echomsg var . "=" . val
