@@ -31,10 +31,9 @@ endfunction
 
 " autocmd {{{1
 augroup ex_vimentry_buffer
-    au!
-    au BufEnter <buffer> call <SID>init_buffer()
-    au BufWritePost <buffer> call <SID>init_vimentry()
-    au VimEnter <buffer> call <SID>init_vimentry()
+    au! BufEnter <buffer> call <SID>init_buffer()
+    au! BufWritePost <buffer> call <SID>init_vimentry()
+    au! VimEnter <buffer> call <SID>init_vimentry()
 augroup END
 "}}}1
 
