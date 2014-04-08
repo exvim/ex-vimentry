@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 5
+let s:version = 6
 " }}}
 
 " functions {{{1
@@ -10,9 +10,7 @@ function vimentry#write_default_template()
     " clear screen
     silent 1,$d _
 
-    " NOTE: we use the dir path of .vimentry instead of getcwd().  
     let filename = expand('%')
-    let cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )  
 
     " the parameter will parse as let g:ex_{var} = val
@@ -26,7 +24,6 @@ function vimentry#write_default_template()
                 \ "project_type = all -- { all, build, clang, data, doc, game, server, shell, web, ... }",
                 \ "",
                 \ "-- Project settings:",
-                \ "cwd = '" . cwd . "'",
                 \ "version = " . s:version,
                 \ "project_name = '" . projectName . "'",
                 \ "",
