@@ -42,3 +42,87 @@ To install using [NeoBundle](https://github.com/Shougo/neobundle.vim):
     copy all of the files into your ~/.vim directory
 
 ## Syntax
+
+vimentry file allow three type of values:
+
+ - option
+ - string
+ - array
+
+**Option**
+
+```
+name = option_value
+```
+
+An option value will become string in vimscript, option doesn't allow white-space in it.
+
+**String**
+
+```
+name = 'A string value'
+```
+
+A string is almost same as option value, except that it allow white-space in it.
+
+**Array**
+
+```
+name = opt1,opt2,opt3
+name += opt4
+name += opt5,opt6
+```
+
+All of three lines above is operating the same array. Array element is separated by `,`.
+You can use `+=` to continue operate an existed array.
+
+**NOTE:** If you only have one item for an array, you must use `+=` define it, otherwise 
+the value will become an option or a string. For example:
+
+```
+name += opt1
+```
+
+## Add your event listeners
+
+You can add event listeners after vimentry file parsed. To do this, you need to add register
+scripts in your `.vimrc` file. ex-vimentry provide `vimentry#on( event, funcref )` function 
+to help you do this. 
+
+There are three different events you can listen to: reset, changed and project\_type\_changed. 
+
+ - reset: Before vimentry file apply changed settings. 
+ - changed: When vimentry file changed, and saved by user.
+ - project\_type\_changed: After project\_type changed.
+
+**NOTE:**
+
+## Get vimentry settings.
+
+In last section I show you the way to hook functions for vimentry events. ex-vimentry also 
+provide another function for get values you defined in vimentry file. 
+
+**vimentry#get( name, ... )** 
+
+Get value by {name}. You can provide default value in the second parameter, in case of the value
+doesn't exists.
+
+**vimentry#check( name, val )** 
+
+Check if the {name} of the value you defined is same as the {val}
+
+## Example
+
+Here is a simple example to show you how to use vimentry file settings:
+
+```
+function my_func () 
+    let project_name = vimentry#get('project_name')
+    if project_name == ''
+        call ex#error("Can't find vimentry setting 'project_name'.")
+        return
+    endif
+endfunction
+
+vimentry#on( 'changed', function('my_func') )
+```
