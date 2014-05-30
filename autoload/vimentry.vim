@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 7
+let s:version = 8
 " }}}
 
 " functions {{{1
@@ -23,16 +23,20 @@ function vimentry#write_default_template()
                 \ "-- Press <F5> to apply project_type for other settings",
                 \ "project_type = all -- { all, build, clang, data, doc, game, server, shell, web, ... }",
                 \ "",
-                \ "-- Project settings:",
+                \ "-- Project Settings:",
                 \ "version = " . s:version,
                 \ "project_name = '" . projectName . "'",
                 \ "",
-                \ "-- File and folder filters:",
+                \ "-- File And Folder Filters:",
                 \ "folder_filter_mode = include -- { include, exclude }",
                 \ "folder_filter_root_only = true -- { true, false }",
                 \ "folder_filter += ",
                 \ "file_filter += ",
                 \ "file_ignore_pattern += ",
+                \ "",
+                \ "-- Building:",
+                \ "builder = gulp -- { gulp, grunt, gcc, xcode, vs, unity3d, ... }",
+                \ "build_opt = ''",
                 \ "",
                 \ "-- ex-project Options:",
                 \ "enable_project_browser = true -- { true, false }",
@@ -53,7 +57,7 @@ function vimentry#write_default_template()
                 \ "-- ex-macrohl Options:",
                 \ "enable_macrohl = true -- { true, false }",
                 \ "",
-                \ "-- sub projects:",
+                \ "-- Project References:",
                 \ "-- sub_project_refs += foobar1.exvim -- example",
                 \ "-- sub_project_refs += foobar2.exvim -- example",
                 \ ] )
