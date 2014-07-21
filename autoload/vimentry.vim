@@ -5,6 +5,15 @@ let s:version = 8
 
 " functions {{{1
 
+function s:write_default( name, default, comment ) 
+    if exists( 's:vimentry_'.a:name )
+        if type('s:vimentry_'.a:name) == type(default)
+        endif
+    endif
+
+    " TODO
+endfunction
+
 " vimentry#write_default_template {{{2
 function vimentry#write_default_template() 
     " clear screen
