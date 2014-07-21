@@ -20,6 +20,7 @@ function! s:init_vimentry()
 
     " if the file is empty, we creat a template for it
     if findfile( fnamemodify(filename,':p'), '.;' ) == "" || empty( readfile(filename) )
+        call vimentry#clear_vars()
         call vimentry#write_default_template()
     endif
     call vimentry#parse()
