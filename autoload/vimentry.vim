@@ -48,6 +48,7 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     let filename = expand('%')
+    let _cwd = ex#path_fmt( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )  
 
     " the parameter will parse as let g:ex_{var} = val
@@ -63,8 +64,14 @@ function vimentry#write_default_template()
                 \ "-- Project Settings:",
                 \ "version = " . s:version,
                 \ "project_name = '" . projectName . "'",
+                \ "project_cwd = '" . _cwd . "'",
                 \ "",
                 \ "-- File And Folder Filters:",
+                \ "folder_filter_mode = include -- { include, exclude }",
+                \ "folder_filter_root_only = true -- { true, false }",
+                \ "folder_filter += ",
+                \ "file_filter += __EMPTY__,c,cpp,h,sh,mak",
+                \ "file_ignore_pattern += ",
                 \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
                 \ s:write_default( "folder_filter_root_only", "true", "{ true, false }" ),
                 \ s:write_default( "folder_filter", [], "" ),
@@ -76,6 +83,9 @@ function vimentry#write_default_template()
                 \ s:write_default( "build_opt", "''", "" ),
                 \ "",
                 \ "-- ex-project Options:",
+                \ "enable_project_browser = true -- { true, false }",
+                \ "project_browser = ex -- { ex, nerdtree }",
+                \ "enable_restore_bufs = true -- { true, false }",
                 \ s:write_default( "enable_project_browser", "true", "{ true, false }" ),
                 \ s:write_default( "project_browser", "ex", "{ ex, nerdtree }" ),
                 \ "",
@@ -262,4 +272,20 @@ endfunction
 
 "}}}1
 
+function vimentry#edit() " <<<
+    let project_name = vimentry#get('project_name')
+    let project_cwd = vimentry#get('project_cwd')
+    if project_name == ''
+        call ex#error("Can't find vimentry setting 'project_name'.")
+        return
+    endif
+    if  findfile( project_name.'.exvim', escape(project_cwd,' \') ) != ""
+        let vimentry_file = project_name . '.exvim'
+        echon 'edit vimentry file: ' . vimentry_file . "\r"
+        call ex#window#goto_edit_window()
+        silent exec 'e ' . project_cwd . '/' . vimentry_file
+    else
+        call ex#warning("can't find current vimentry file")
+    endif
+endfunction " >>>
 " vim:ts=4:sw=4:sts=4 et fdm=marker:
