@@ -5,6 +5,43 @@ let s:version = 8
 
 " functions {{{1
 
+function s:write_default( name, default, comment ) 
+    let val = a:default
+    if exists( 's:vimentry_'.a:name )
+        if type(s:vimentry_{a:name}) == type(a:default)
+            let val = s:vimentry_{a:name}
+        endif
+    endif
+
+    let comment = ""
+    if a:comment != ""
+        let comment = " -- " . a:comment
+    endif
+
+    " 
+    if type(val) == type([])
+        let valList = ''
+        for item in val
+            if valList == ''
+                let valList = item
+            else
+                let valList = valList . ',' . item 
+            endif
+        endfor
+        return a:name . " += " . valList . comment
+    endif
+
+    "
+    if a:default[0] == "'" && a:default[strlen(a:default)-1] == "'"
+        if strlen(val) == 2
+            return a:name . " = " . val . comment
+        endif
+        return a:name . " = '" . val . "'" . comment
+    endif
+
+    return a:name . " = " . val . comment
+endfunction
+
 " vimentry#write_default_template {{{2
 function vimentry#write_default_template() 
     " clear screen
@@ -22,7 +59,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- Choose your project type",
                 \ "-- Press <F5> to apply project_type for other settings",
-                \ "project_type = all -- { all, build, clang, data, doc, game, server, shell, web, ... }",
+                \ s:write_default( "project_type", "all", "{ all, build, clang, data, doc, game, server, shell, web, ... }" ),
                 \ "",
                 \ "-- Project Settings:",
                 \ "version = " . s:version,
@@ -35,30 +72,37 @@ function vimentry#write_default_template()
                 \ "folder_filter += ",
                 \ "file_filter += __EMPTY__,c,cpp,h,sh,mak",
                 \ "file_ignore_pattern += ",
+                \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
+                \ s:write_default( "folder_filter_root_only", "true", "{ true, false }" ),
+                \ s:write_default( "folder_filter", [], "" ),
+                \ s:write_default( "file_filter", [], "" ),
+                \ s:write_default( "file_ignore_pattern", [], "" ),
                 \ "",
                 \ "-- Building:",
-                \ "builder = gulp -- { gulp, grunt, gcc, xcode, vs, unity3d, ... }",
-                \ "build_opt = ''",
+                \ s:write_default( "builder", "gulp", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
+                \ s:write_default( "build_opt", "''", "" ),
                 \ "",
                 \ "-- ex-project Options:",
                 \ "enable_project_browser = true -- { true, false }",
                 \ "project_browser = ex -- { ex, nerdtree }",
                 \ "enable_restore_bufs = true -- { true, false }",
+                \ s:write_default( "enable_project_browser", "true", "{ true, false }" ),
+                \ s:write_default( "project_browser", "ex", "{ ex, nerdtree }" ),
                 \ "",
                 \ "-- ex-gsearch Options:",
-                \ "enable_gsearch = true -- { true, false }",
-                \ "gsearch_engine = idutils -- { idutils, grep }",
+                \ s:write_default( "enable_gsearch", "true", "{ true, false }" ),
+                \ s:write_default( "gsearch_engine", "idutils", "{ idutils, grep }" ),
                 \ "",
                 \ "-- ex-tags Options:",
-                \ "enable_tags = true -- { true, false }",
-                \ "enable_symbols = true -- { true, false }",
-                \ "enable_inherits = true -- { true, false }",
+                \ s:write_default( "enable_tags", "true", "{ true, false }" ),
+                \ s:write_default( "enable_symbols", "true", "{ true, false }" ),
+                \ s:write_default( "enable_inherits", "true", "{ true, false }" ),
                 \ "",
                 \ "-- ex-cscope Options:",
-                \ "enable_cscope = true -- { true, false }",
+                \ s:write_default( "enable_cscope", "true", "{ true, false }" ),
                 \ "",
                 \ "-- ex-macrohl Options:",
-                \ "enable_macrohl = true -- { true, false }",
+                \ s:write_default( "enable_macrohl", "true", "{ true, false }" ),
                 \ "",
                 \ "-- Project References:",
                 \ "-- sub_project_refs += foobar1.exvim -- example",
@@ -94,13 +138,18 @@ function vimentry#check( name, val )
     return 0
 endfunction
 
-" vimentry#parse {{{2
-function vimentry#parse() 
+" vimentry#clear_vars {{{2
+function vimentry#clear_vars() 
     " remove old global variables 
     for varname in s:varnames
         unlet {varname}
     endfor
     let s:varnames = [] " list clean 
+endfunction
+
+" vimentry#parse {{{2
+function vimentry#parse() 
+    call vimentry#clear_vars()
 
     " parse each line to get variable
     for line in getline(1,'$')

@@ -15,14 +15,15 @@ endfunction
 function! s:init_vimentry() 
     let filename = expand('%')
 
+    " reset last applys
+    call vimentry#reset()
+
     " if the file is empty, we creat a template for it
     if findfile( fnamemodify(filename,':p'), '.;' ) == "" || empty( readfile(filename) )
+        call vimentry#clear_vars()
         call vimentry#write_default_template()
     endif
     call vimentry#parse()
-
-    " reset last applys
-    call vimentry#reset()
 
     " apply vimentry settings
     call vimentry#apply()
