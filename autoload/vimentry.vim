@@ -252,6 +252,7 @@ function vimentry#reset()
 endfunction
 
 " vimentry#apply {{{2
+let s:is_first_time = 1
 function vimentry#apply() 
     " check if we have version
     if vimentry#check('version', '')
@@ -271,6 +272,13 @@ function vimentry#apply()
     for Funcref in listeners
         call Funcref()
     endfor
+
+    let s:is_first_time = 0
+endfunction
+
+" vimentry#is_first_time {{{2
+function vimentry#is_first_time() 
+    return s:is_first_time
 endfunction
 
 "}}}1
