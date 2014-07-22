@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 8
+let s:version = 9
 " }}}
 
 " functions {{{1
@@ -93,6 +93,9 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- ex-macrohl Options:",
                 \ s:write_default( "enable_macrohl", "true", "{ true, false }" ),
+                \ "",
+                \ "-- restore buffers:",
+                \ s:write_default( "enable_restore_bufs", "false", "{ true, false }" ),
                 \ "",
                 \ "-- Project References:",
                 \ "-- sub_project_refs += foobar1.exvim -- example",
