@@ -95,7 +95,7 @@ function vimentry#write_default_template()
                 \ s:write_default( "enable_macrohl", "false", "{ true, false }" ),
                 \ "",
                 \ "-- restore buffers:",
-                \ s:write_default( "enable_restore_bufs", "true", "{ true, false }" ),
+                \ s:write_default( "enable_restore_bufs", "false", "{ true, false }" ),
                 \ "",
                 \ "-- Project References:",
                 \ "-- sub_project_refs += foobar1.exvim -- example",
