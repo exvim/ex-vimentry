@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 9
+let s:version = 10
 " }}}
 
 " functions {{{1
@@ -66,7 +66,6 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- File And Folder Filters:",
                 \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
-                \ s:write_default( "folder_filter_root_only", "true", "{ true, false }" ),
                 \ s:write_default( "folder_filter", [], "" ),
                 \ s:write_default( "file_filter", [], "" ),
                 \ s:write_default( "file_ignore_pattern", [], "" ),
