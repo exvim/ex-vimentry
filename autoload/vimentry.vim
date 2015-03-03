@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 9
+let s:version = 10
 " }}}
 
 " functions {{{1
@@ -28,18 +28,23 @@ function s:write_default( name, default, comment )
                 let valList = valList . ',' . item 
             endif
         endfor
-        return a:name . " += " . valList . comment
+        let line = a:name . " += " . valList . comment
+        return substitute (line, '\s\+$', '', 'e') " strip whitespace
     endif
 
     "
     if a:default[0] == "'" && a:default[strlen(a:default)-1] == "'"
         if strlen(val) == 2
-            return a:name . " = " . val . comment
+            let line = a:name . " = " . val . comment
+            return substitute (line, '\s\+$', '', 'e') " strip whitespace
         endif
-        return a:name . " = '" . val . "'" . comment
+
+        let line = a:name . " = '" . val . "'" . comment
+        return substitute (line, '\s\+$', '', 'e') " strip whitespace
     endif
 
-    return a:name . " = " . val . comment
+    let line = a:name . " = " . val . comment
+    return substitute (line, '\s\+$', '', 'e') " strip whitespace
 endfunction
 
 " vimentry#write_default_template {{{2
@@ -48,7 +53,6 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     let filename = expand('%')
-    let _cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )  
 
     " the parameter will parse as let g:ex_{var} = val
@@ -67,13 +71,7 @@ function vimentry#write_default_template()
                 \ "project_cwd = '" . _cwd . "'",
                 \ "",
                 \ "-- File And Folder Filters:",
-                \ "folder_filter_mode = include -- { include, exclude }",
-                \ "folder_filter_root_only = true -- { true, false }",
-                \ "folder_filter += ",
-                \ "file_filter += __EMPTY__,c,cpp,h,sh,mak",
-                \ "file_ignore_pattern += ",
                 \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
-                \ s:write_default( "folder_filter_root_only", "true", "{ true, false }" ),
                 \ s:write_default( "folder_filter", [], "" ),
                 \ s:write_default( "file_filter", [], "" ),
                 \ s:write_default( "file_ignore_pattern", [], "" ),
@@ -83,9 +81,6 @@ function vimentry#write_default_template()
                 \ s:write_default( "build_opt", "''", "" ),
                 \ "",
                 \ "-- ex-project Options:",
-                \ "enable_project_browser = true -- { true, false }",
-                \ "project_browser = ex -- { ex, nerdtree }",
-                \ "enable_restore_bufs = true -- { true, false }",
                 \ s:write_default( "enable_project_browser", "true", "{ true, false }" ),
                 \ s:write_default( "project_browser", "ex", "{ ex, nerdtree }" ),
                 \ "",
