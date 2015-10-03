@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 11
+let s:version = 12
 " }}}
 
 " functions {{{1
@@ -76,7 +76,7 @@ function vimentry#write_default_template()
                 \ s:write_default( "file_ignore_pattern", [], "" ),
                 \ "",
                 \ "-- Editing:",
-                \ s:write_default( "tabstop", &tabstop, "" ),
+                \ s:write_default( "indent", &tabstop, "" ),
                 \ "",
                 \ "-- Building:",
                 \ s:write_default( "builder", "gulp", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
