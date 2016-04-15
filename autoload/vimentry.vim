@@ -94,6 +94,8 @@ function vimentry#write_default_template()
                 \ s:write_default( "enable_tags", "true", "{ true, false }" ),
                 \ s:write_default( "enable_symbols", "true", "{ true, false }" ),
                 \ s:write_default( "enable_inherits", "true", "{ true, false }" ),
+                \ s:write_default( "enable_custom_tags", "false", "{ true, false }" ),
+                \ s:write_default( "custom_tags_file" , "", "" ),
                 \ "",
                 \ "-- ex-cscope Options:",
                 \ s:write_default( "enable_cscope", "false", "{ true, false }" ),
