@@ -77,6 +77,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- Editing:",
                 \ s:write_default( "indent", &tabstop, "" ),
+                \ s:write_default( "expand_tab", (&expandtab == 0 ? "false" : "true"), "{ true, false }"),
                 \ "",
                 \ "-- Building:",
                 \ s:write_default( "builder", "gulp", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
