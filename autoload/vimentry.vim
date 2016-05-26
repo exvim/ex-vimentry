@@ -1,6 +1,6 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 12
+let s:version = 13
 " }}}
 
 " functions {{{1
