@@ -1,11 +1,11 @@
 " variables {{{1
 let s:varnames = []
-let s:version = 10
+let s:version = 13
 " }}}
 
 " functions {{{1
 
-function s:write_default( name, default, comment ) 
+function s:write_default( name, default, comment )
     let val = a:default
     if exists( 's:vimentry_'.a:name )
         if type(s:vimentry_{a:name}) == type(a:default)
@@ -18,14 +18,14 @@ function s:write_default( name, default, comment )
         let comment = " -- " . a:comment
     endif
 
-    " 
+    "
     if type(val) == type([])
         let valList = ''
         for item in val
             if valList == ''
                 let valList = item
             else
-                let valList = valList . ',' . item 
+                let valList = valList . ',' . item
             endif
         endfor
         let line = a:name . " += " . valList . comment
@@ -48,13 +48,13 @@ function s:write_default( name, default, comment )
 endfunction
 
 " vimentry#write_default_template {{{2
-function vimentry#write_default_template() 
+function vimentry#write_default_template()
     " clear screen
     silent 1,$d _
 
     let filename = expand('%')
-    let _cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
-    let projectName = fnamemodify( filename, ":t:r" )  
+
+    let projectName = fnamemodify( filename, ":t:r" )
 
     " the parameter will parse as let g:ex_{var} = val
     silent call append ( 0, [
@@ -77,6 +77,10 @@ function vimentry#write_default_template()
                     \ s:write_default( "file_filter", "__EMPTY__,c,cpp,h,sh,mak,java,xml", "" ),
                 \ s:write_default( "file_ignore_pattern", [], "" ),
                 \ "",
+                \ "-- Editing:",
+                \ s:write_default( "indent", &tabstop, "" ),
+                \ s:write_default( "expand_tab", (&expandtab == 0 ? "false" : "true"), "{ true, false }"),
+                \ "",
                 \ "-- Building:",
                     \ s:write_default( "builder", "gcc", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
                 \ s:write_default( "build_opt", "''", "" ),
@@ -93,15 +97,17 @@ function vimentry#write_default_template()
                 \ s:write_default( "enable_tags", "true", "{ true, false }" ),
                 \ s:write_default( "enable_symbols", "true", "{ true, false }" ),
                 \ s:write_default( "enable_inherits", "true", "{ true, false }" ),
+                \ s:write_default( "enable_custom_tags", "false", "{ true, false }" ),
+                \ s:write_default( "custom_tags_file" , "", "" ),
                 \ "",
                 \ "-- ex-cscope Options:",
-                \ s:write_default( "enable_cscope", "true", "{ true, false }" ),
+                \ s:write_default( "enable_cscope", "false", "{ true, false }" ),
                 \ "",
                 \ "-- ex-macrohl Options:",
-                \ s:write_default( "enable_macrohl", "true", "{ true, false }" ),
+                \ s:write_default( "enable_macrohl", "false", "{ true, false }" ),
                 \ "",
                 \ "-- restore buffers:",
-                \ s:write_default( "enable_restore_bufs", "true", "{ true, false }" ),
+                \ s:write_default( "enable_restore_bufs", "false", "{ true, false }" ),
                 \ "",
                 \ "-- Project References:",
                 \ "-- sub_project_refs += foobar1.exvim -- example",
@@ -114,7 +120,7 @@ function vimentry#write_default_template()
 endfunction
 
 " vimentry#get {{{2
-function vimentry#get( name, ... ) 
+function vimentry#get( name, ... )
     if exists( 's:vimentry_'.a:name )
         return s:vimentry_{a:name}
     endif
@@ -129,7 +135,7 @@ function vimentry#get( name, ... )
 endfunction
 
 " vimentry#check {{{2
-function vimentry#check( name, val ) 
+function vimentry#check( name, val )
     let val = vimentry#get(a:name)
     if val == a:val
         return 1
@@ -138,23 +144,23 @@ function vimentry#check( name, val )
 endfunction
 
 " vimentry#clear_vars {{{2
-function vimentry#clear_vars() 
-    " remove old global variables 
+function vimentry#clear_vars()
+    " remove old global variables
     for varname in s:varnames
         unlet {varname}
     endfor
-    let s:varnames = [] " list clean 
+    let s:varnames = [] " list clean
 endfunction
 
 " vimentry#parse {{{2
-function vimentry#parse() 
+function vimentry#parse()
     call vimentry#clear_vars()
 
     " parse each line to get variable
     for line in getline(1,'$')
         let pos = match(line,'^\w\+\s*\(+=\|=\)\s*\S*')
         if pos == -1 " if the line is comment line, skip it.
-            continue 
+            continue
         endif
 
         let var = matchstr( line, '^\w\+\(\s*\(+=\|=\)\)\@=', 0 )
@@ -176,8 +182,8 @@ function vimentry#parse()
                 silent call add( s:varnames, 's:vimentry_'.var )
             endif
 
-            " list variable 
-            " sytanx: 
+            " list variable
+            " sytanx:
             " list = val1,val2,
             " list += val1
             " list += val1,val2
@@ -203,7 +209,7 @@ function vimentry#parse()
 
     " DEBUG:
     " for varname in s:varnames
-    "     echomsg varname . " = " . string({varname}) 
+    "     echomsg varname . " = " . string({varname})
     " endfor
 endfunction
 
@@ -212,9 +218,9 @@ let s:event_listeners = {
             \ 'reset': [],
             \ 'changed': [],
             \ 'project_type_changed': [],
-            \ } 
+            \ }
 
-function vimentry#on( event, funcref ) 
+function vimentry#on( event, funcref )
     if !has_key( s:event_listeners, a:event )
         call ex#warning( "Cant find event " . a:event )
         return
@@ -228,7 +234,7 @@ function vimentry#on( event, funcref )
 endfunction
 
 " vimentry#apply_project_type {{{2
-function vimentry#apply_project_type() 
+function vimentry#apply_project_type()
     " invoke project_type_changed event
     " NOTE: function ref variable must start with captial character
     let listeners = s:event_listeners['project_type_changed']
@@ -238,7 +244,7 @@ function vimentry#apply_project_type()
 endfunction
 
 " vimentry#reset {{{2
-function vimentry#reset() 
+function vimentry#reset()
     " invoke reset event
     " NOTE: function ref variable must start with captial character
     let listeners = s:event_listeners['reset']
@@ -249,14 +255,14 @@ endfunction
 
 " vimentry#apply {{{2
 let s:is_first_time = 1
-function vimentry#apply() 
+function vimentry#apply()
     " check if we have version
     if vimentry#check('version', '')
         call ex#error('Invalid vimentry file, no version provide.')
         return
     endif
 
-    " if the version is different, write the vimentry file with template and re-parse it  
+    " if the version is different, write the vimentry file with template and re-parse it
     if !vimentry#check('version', s:version)
         call vimentry#write_default_template()
         call vimentry#parse()
@@ -273,7 +279,7 @@ function vimentry#apply()
 endfunction
 
 " vimentry#is_first_time {{{2
-function vimentry#is_first_time() 
+function vimentry#is_first_time()
     return s:is_first_time
 endfunction
 

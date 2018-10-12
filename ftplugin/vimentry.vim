@@ -12,7 +12,7 @@ function! s:init_buffer()
 endfunction
 
 " s:init_vimentry {{{2
-function! s:init_vimentry() 
+function! s:init_vimentry()
     let filename = expand('%')
 
     " reset last applys
@@ -46,13 +46,13 @@ nnoremap <silent> <buffer> <F5> :call vimentry#apply_project_type()<CR>
 " there are three places can trigger init_vimentry() function
 " 1: run vimentry file through Vim command in shell. For example: vim foobar.exvim
 " exVim make sure init_vimentry() call after VimEnter.
-" 
+"
 " 2: edit a new (new here means new file or exists file but not loaded into
-" current Vim buffer ) vimentry file in current open Vim.  this will trigger 
-" the script below, and since we already enter vim, the init_vimentry() 
+" current Vim buffer ) vimentry file in current open Vim.  this will trigger
+" the script below, and since we already enter vim, the init_vimentry()
 " will be invoke after VimEnter.
-" 
-" 3: save a opened vimentry file 
+"
+" 3: save a opened vimentry file
 " this also make sure init_vimentry() invoked after VimEnter.
 
 if exists('g:ex_vim_entered') && g:ex_vim_entered == 1
