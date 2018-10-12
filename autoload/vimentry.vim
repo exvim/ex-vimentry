@@ -53,6 +53,7 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     let filename = expand('%')
+    let _cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )  
 
     " the parameter will parse as let g:ex_{var} = val
@@ -73,11 +74,11 @@ function vimentry#write_default_template()
                 \ "-- File And Folder Filters:",
                 \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
                 \ s:write_default( "folder_filter", [], "" ),
-                \ s:write_default( "file_filter", [], "" ),
+                    \ s:write_default( "file_filter", "__EMPTY__,c,cpp,h,sh,mak,java,xml", "" ),
                 \ s:write_default( "file_ignore_pattern", [], "" ),
                 \ "",
                 \ "-- Building:",
-                \ s:write_default( "builder", "gulp", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
+                    \ s:write_default( "builder", "gcc", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
                 \ s:write_default( "build_opt", "''", "" ),
                 \ "",
                 \ "-- ex-project Options:",
@@ -86,7 +87,7 @@ function vimentry#write_default_template()
                 \ "",
                 \ "-- ex-gsearch Options:",
                 \ s:write_default( "enable_gsearch", "true", "{ true, false }" ),
-                \ s:write_default( "gsearch_engine", "idutils", "{ idutils, grep }" ),
+                    \ s:write_default( "gsearch_engine", "idutils", "{ idutils, grep, ag }" ),
                 \ "",
                 \ "-- ex-tags Options:",
                 \ s:write_default( "enable_tags", "true", "{ true, false }" ),
