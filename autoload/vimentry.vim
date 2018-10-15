@@ -53,7 +53,7 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     let filename = expand('%')
-
+    let _cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )
 
     " the parameter will parse as let g:ex_{var} = val
