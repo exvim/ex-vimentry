@@ -4,6 +4,18 @@ function! s:on_vim_enter()
     let g:ex_vim_entered = 1
 endfunction
 
+" if !exists(g:ex_project_browser)
+    " let g:ex_project_browser = 'nerdtree' "nerdtree ex
+" endif
+
+" if !exists(g:ex_gsearch_engine)
+    " let g:ex_gsearch_engine = 'ag' "idutils ag grep
+" endif
+
+" if !exists(g:ex_cscope_engine)
+    " let g:ex_cscope_engine = 'gtags' "gtags cscope
+" endif
+
 " autocmd {{{
 augroup ex_vimentry
     au!

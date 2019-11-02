@@ -53,6 +53,7 @@ function vimentry#write_default_template()
     silent 1,$d _
 
     let filename = expand('%')
+    let _cwd = ex#path#translate( fnamemodify( filename, ':p:h' ), 'unix' )
     let projectName = fnamemodify( filename, ":t:r" )
 
     " the parameter will parse as let g:ex_{var} = val
@@ -68,11 +69,12 @@ function vimentry#write_default_template()
                 \ "-- Project Settings:",
                 \ "version = " . s:version,
                 \ "project_name = '" . projectName . "'",
+                \ "project_cwd = '" . _cwd . "'",
                 \ "",
                 \ "-- File And Folder Filters:",
                 \ s:write_default( "folder_filter_mode", "include", "{ include, exclude }" ),
                 \ s:write_default( "folder_filter", [], "" ),
-                \ s:write_default( "file_filter", [], "" ),
+                    \ s:write_default( "file_filter", "__EMPTY__,c,cpp,h,sh,mak,java,xml", "" ),
                 \ s:write_default( "file_ignore_pattern", [], "" ),
                 \ "",
                 \ "-- Editing:",
@@ -80,16 +82,16 @@ function vimentry#write_default_template()
                 \ s:write_default( "expand_tab", (&expandtab == 0 ? "false" : "true"), "{ true, false }"),
                 \ "",
                 \ "-- Building:",
-                \ s:write_default( "builder", "gulp", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
+                    \ s:write_default( "builder", "gcc", "{ gulp, grunt, gcc, xcode, vs, unity3d, ... }" ),
                 \ s:write_default( "build_opt", "''", "" ),
                 \ "",
                 \ "-- ex-project Options:",
                 \ s:write_default( "enable_project_browser", "true", "{ true, false }" ),
-                \ s:write_default( "project_browser", "ex", "{ ex, nerdtree }" ),
+                \ s:write_default( "project_browser", g:ex_project_browser, "{ ex, nerdtree }" ),
                 \ "",
                 \ "-- ex-gsearch Options:",
                 \ s:write_default( "enable_gsearch", "true", "{ true, false }" ),
-                \ s:write_default( "gsearch_engine", "idutils", "{ idutils, grep }" ),
+                    \ s:write_default( "gsearch_engine", g:ex_gsearch_engine, "{ idutils, grep, ag }" ),
                 \ "",
                 \ "-- ex-tags Options:",
                 \ s:write_default( "enable_tags", "true", "{ true, false }" ),
@@ -99,10 +101,11 @@ function vimentry#write_default_template()
                 \ s:write_default( "custom_tags_file" , "", "" ),
                 \ "",
                 \ "-- ex-cscope Options:",
-                \ s:write_default( "enable_cscope", "false", "{ true, false }" ),
+                \ s:write_default( "enable_cscope", "true", "{ true, false }" ),
+                    \ s:write_default( "cscope_engine", g:ex_cscope_engine, "{ gtags, cscope }" ),
                 \ "",
                 \ "-- ex-macrohl Options:",
-                \ s:write_default( "enable_macrohl", "false", "{ true, false }" ),
+                \ s:write_default( "enable_macrohl", "true", "{ true, false }" ),
                 \ "",
                 \ "-- restore buffers:",
                 \ s:write_default( "enable_restore_bufs", "false", "{ true, false }" ),
@@ -283,4 +286,20 @@ endfunction
 
 "}}}1
 
+function vimentry#edit() " <<<
+    let project_name = vimentry#get('project_name')
+    let project_cwd = vimentry#get('project_cwd')
+    if project_name == ''
+        call ex#error("Can't find vimentry setting 'project_name'.")
+        return
+    endif
+    if  findfile( project_name.'.exvim', escape(project_cwd,' \') ) != ""
+        let vimentry_file = project_name . '.exvim'
+        echon 'edit vimentry file: ' . vimentry_file . "\r"
+        call ex#window#goto_edit_window()
+        silent exec 'e ' . project_cwd . '/' . vimentry_file
+    else
+        call ex#warning("can't find current vimentry file")
+    endif
+endfunction " >>>
 " vim:ts=4:sw=4:sts=4 et fdm=marker:
